@@ -56,6 +56,11 @@ jobs:
           echo "AWS_SECRET_ACCESS_KEY=$(python3 -c "import json; print(json.load(open('/tmp/creds.json'))['aws_secret_access_key'])")" >> $GITHUB_ENV
           echo "AWS_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
 
+      - name: Configure DVC
+        run: |
+          dvc remote add -d myremote s3://${{ secrets.CLOUD_BUCKET }}/dvc --force
+          dvc remote modify myremote region us-east-1
+
       - name: Pull data with DVC
         run: |
           dvc pull data/train_phase1.csv data/eval.csv
