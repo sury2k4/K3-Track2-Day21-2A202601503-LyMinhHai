@@ -44,14 +44,16 @@ jobs:
           python-version: "3.10"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
+          pip install awscli
 
       - name: Authenticate to AWS
         run: |
-          echo "${{ secrets.CLOUD_CREDENTIALS }}" | python -c "import sys, json; d=json.load(sys.stdin); print(d['aws_access_key_id'])" > /tmp/access_key.txt
-          echo "${{ secrets.CLOUD_CREDENTIALS }}" | python -c "import sys, json; d=json.load(sys.stdin); print(d['aws_secret_access_key'])" > /tmp/secret_key.txt
-          echo "AWS_ACCESS_KEY_ID=$(cat /tmp/access_key.txt)" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=$(cat /tmp/secret_key.txt)" >> $GITHUB_ENV
+          CREDS='${{ secrets.CLOUD_CREDENTIALS }}'
+          echo "$CREDS" > /tmp/creds.json
+          echo "AWS_ACCESS_KEY_ID=$(python3 -c "import json; print(json.load(open('/tmp/creds.json'))['aws_access_key_id'])")" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=$(python3 -c "import json; print(json.load(open('/tmp/creds.json'))['aws_secret_access_key'])")" >> $GITHUB_ENV
           echo "AWS_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
 
       - name: Pull data with DVC
